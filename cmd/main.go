@@ -1,6 +1,9 @@
 package main
 
 import (
+	"get-rates-usdt-grpc-service/config"
+	"get-rates-usdt-grpc-service/internal/infrastracture/logs"
+	"get-rates-usdt-grpc-service/run"
 	"os"
 )
 
