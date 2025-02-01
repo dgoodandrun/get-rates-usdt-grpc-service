@@ -4,6 +4,10 @@ import (
 	"context"
 	"get-rates-usdt-grpc-service/config"
 	"get-rates-usdt-grpc-service/internal/infrastracture/errors"
+	"get-rates-usdt-grpc-service/internal/modules/controller"
+	"get-rates-usdt-grpc-service/internal/modules/service"
+	"get-rates-usdt-grpc-service/internal/modules/storage"
+	pb "get-rates-usdt-grpc-service/protogen/golang/get-rates"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -51,9 +55,16 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 	}
 	a.lis = lis
 
+	chStorage, err := storage.NewClickHouseStorage(a.conf.ClickHouse)
+	if err != nil {
+		a.logger.Fatal("Failed to init ClickHouse: ", err)
+	}
+
+	ratesService := service.NewRatesService(chStorage, a.conf.GarantexURL)
+	ratesController := controller.NewRatesController(ratesService)
 
 	a.grpcSrv = grpc.NewServer()
-	pb.RegisterGetRatesServer(a.grpcSrv, ....)
+	pb.RegisterRatesServiceServer(a.grpcSrv, ratesController)
 
 	// возвращаем приложение
 	return a
@@ -64,19 +75,13 @@ func (a *App) Run() int {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	errGroup, ctx := errgroup.WithContext(ctx)
+	eg, ctx := errgroup.WithContext(ctx)
 
 	// Устанавливаем обработчик сигналов
 	signal.Notify(a.Sig, syscall.SIGINT, syscall.SIGTERM)
 
 	// Горутина для обработки сигналов завершения работы
-	errGroup.Go(func() error {
-		defer func() {
-			if a.conn != nil {
-				a.conn.Close()
-			}
-		}()
-
+	eg.Go(func() error {
 		select {
 		case sig := <-a.Sig:
 			a.logger.Infof("Received signal: %v, shutting down...", sig)
@@ -90,7 +95,7 @@ func (a *App) Run() int {
 	})
 
 	// Горутина для запуска gRPC сервера
-	errGroup.Go(func() error {
+	eg.Go(func() error {
 		a.logger.Infof("Geo service started on port: %s", a.conf.Port)
 		if err := a.grpcSrv.Serve(a.lis); err != nil && err != grpc.ErrServerStopped {
 			a.logger.Errorf("Failed to serve Geo service: %v", err)
@@ -100,7 +105,7 @@ func (a *App) Run() int {
 	})
 
 	// Ожидаем завершения всех горутин
-	if err := errGroup.Wait(); err != nil {
+	if err := eg.Wait(); err != nil {
 		a.logger.Errorf("Geo service shutdown with error: %v", err)
 		return errors.GeneralError
 	}

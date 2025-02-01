@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"get-rates-usdt-grpc-service/internal/models"
+	"get-rates-usdt-grpc-service/internal/modules/storage"
 	"io"
 	"net/http"
 )
@@ -57,7 +58,7 @@ func (s *RatesService) GetCurrentRate(ctx context.Context) (*models.Rate, error)
 		Timestamp: data.Timestamp,
 	}
 
-	if err := storage.SaveRate(ctx, rate); err != nil {
+	if err := s.storage.SaveRate(ctx, rate); err != nil {
 		return rate, fmt.Errorf("failed to save rate: %w", err)
 	}
 

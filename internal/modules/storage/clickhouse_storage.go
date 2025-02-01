@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"get-rates-usdt-grpc-service/config"
+	"get-rates-usdt-grpc-service/internal/infrastracture/db"
 	"get-rates-usdt-grpc-service/internal/models"
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"time"
@@ -27,7 +28,11 @@ func NewClickHouseStorage(cfg config.ClickHouseConfig) (*ClickHouseStorage, erro
 		},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to connect to ClickHouse: %w", err)
+	}
+
+	if err := db.ApplyMigrations(context.Background(), conn); err != nil {
+		return nil, fmt.Errorf("migrations failed: %w", err)
 	}
 
 	return &ClickHouseStorage{conn: conn}, nil

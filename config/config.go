@@ -27,7 +27,7 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 	viper.AutomaticEnv()
 
 	// Устанавливаем значения по умолчанию
-	viper.SetDefault("APP_NAME", "geo")
+	viper.SetDefault("APP_NAME", "getRates")
 
 	// Список обязательных переменных окружения
 	requiredVars := []string{
