@@ -1,6 +1,6 @@
 package models
 
-type Rates struct {
+type Rate struct {
 	Ask       float64
 	Bid       float64
 	Timestamp int64
