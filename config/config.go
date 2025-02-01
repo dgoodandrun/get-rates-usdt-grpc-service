@@ -31,15 +31,12 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 
 	// Список обязательных переменных окружения
 	requiredVars := []string{
-		"API_KEY",
-		"SECRET_KEY",
-		"GEO_SERVICE_PORT",
-		"REDIS_ADDR",
-		"RATE_LIMIT_PER_MINUTE",
-		"QUEUE",
-		"TOPIC",
-		"RABBITMQ_ADDR",
-		"KAFKA_ADDR",
+		"GARANTEX_API_URL",
+		"CLICKHOUSE_HOST",
+		"CLICKHOUSE_PORT",
+		"CLICKHOUSE_DB",
+		"CLICKHOUSE_USER",
+		"CLICKHOUSE_PASSWORD",
 	}
 
 	// Проверяем все обязательные переменные
@@ -50,15 +47,13 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 	}
 
 	a.AppName = viper.GetString("APP_NAME")
-	a.APIKey = viper.GetString("API_KEY")
-	a.SecretKey = viper.GetString("SECRET_KEY")
-	a.Port = viper.GetString("GEO_SERVICE_PORT")
-	a.RedisAddr = viper.GetString("REDIS_ADDR")
-	a.Rate = viper.GetInt("RATE_LIMIT_PER_MINUTE")
-	a.Queue = viper.GetString("QUEUE")
-	a.Topic = viper.GetString("TOPIC")
-	a.RabbitMQAddr = viper.GetString("RABBITMQ_ADDR")
-	a.KafkaAddr = viper.GetString("KAFKA_ADDR")
+	a.Port = viper.GetString("PORT")
+	a.GarantexURL = viper.GetString("GARANTEX_API_URL")
+	a.ClickHouse.Host = viper.GetString("CLICKHOUSE_HOST")
+	a.ClickHouse.Port = viper.GetInt("CLICKHOUSE_PORT")
+	a.ClickHouse.DBName = viper.GetString("CLICKHOUSE_DB")
+	a.ClickHouse.User = viper.GetString("CLICKHOUSE_USER")
+	a.ClickHouse.Password = viper.GetString("CLICKHOUSE_PASSWORD")
 
 	logger.Info("Configuration loaded successfully")
 }

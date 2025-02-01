@@ -19,6 +19,18 @@ type ClickHouseStorage struct {
 }
 
 func NewClickHouseStorage(cfg config.ClickHouseConfig) (*ClickHouseStorage, error) {
+	dns := fmt.Sprintf(
+		"clickhouse://%s:%s@%s:%d/%s?x-multi-statement=true",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.DBName,
+	)
+
+	if err := db.ApplyMigrations(dns); err != nil {
+		return nil, fmt.Errorf("migrations failed: %w", err)
+	}
 	conn, err := clickhouse.Open(&clickhouse.Options{
 		Addr: []string{fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)},
 		Auth: clickhouse.Auth{
@@ -29,10 +41,6 @@ func NewClickHouseStorage(cfg config.ClickHouseConfig) (*ClickHouseStorage, erro
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to ClickHouse: %w", err)
-	}
-
-	if err := db.ApplyMigrations(context.Background(), conn); err != nil {
-		return nil, fmt.Errorf("migrations failed: %w", err)
 	}
 
 	return &ClickHouseStorage{conn: conn}, nil
