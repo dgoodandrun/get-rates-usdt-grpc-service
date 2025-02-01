@@ -6,16 +6,18 @@ import (
 )
 
 type AppConf struct {
-	AppName      string
-	APIKey       string
-	SecretKey    string
-	Port         string
-	RedisAddr    string
-	Queue        string
-	Topic        string
-	RabbitMQAddr string
-	KafkaAddr    string
-	Rate         int
+	AppName     string
+	Port        string
+	GarantexURL string
+	ClickHouse  ClickHouseConfig
+}
+
+type ClickHouseConfig struct {
+	Host     string
+	Port     int
+	DBName   string
+	User     string
+	Password string
 }
 
 func (a *AppConf) Init(logger *zap.SugaredLogger) {
