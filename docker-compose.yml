@@ -1,44 +1,44 @@
 #version: '3'
 
 services:
-  user:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        GITLAB_TOKEN: ${GITLAB_TOKEN}
-    container_name: user
-    restart: always
-    env_file: .env
-    volumes:
-      - gateway-data:/var/lib/postgresql/data
-      - ./migrations:/app/migrations
-    networks:
-      - gateway-network
-    depends_on:
-      - postgres
-
-  postgres:
-    image: postgres:15-alpine
-    container_name: postgres
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+  rates-service:
+    build: .
+    container_name: rates-service
+    restart: unless-stopped
     env_file: .env
     ports:
-      - ${DB_PORT}:${DB_PORT}
-    volumes:
-      - gateway-data:/var/lib/postgresql/data
+      - "50051:50051"
+      - "9090:9090"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
     networks:
-      - gateway-network
+      - rates-network
 
-#networks:
-#  gateway-network:
-#    external: true
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    env_file: .env
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8123/ping" ]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+    networks:
+        - rates-network
+
 networks:
-  gateway-network:
+  rates-network:
     driver: bridge
 
 volumes:
-  gateway-data:
+  clickhouse-data:
