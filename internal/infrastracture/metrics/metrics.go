@@ -1,67 +1,74 @@
 package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"net/http"
+)
 
 var (
-	TotalRequests = prometheus.NewCounterVec(
+	GRPCRequestsTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_request_total",
-			Help: "Total number of request received",
+			Name: "grpc_requests_total",
+			Help: "Total number of gRPC requests",
 		},
-		[]string{"method", "endpoint"},
+		[]string{"method", "status"},
 	)
 
-	RequestDuration = prometheus.NewHistogramVec(
+	GRPCRequestDuration = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "http_request_duration_seconds",
-			Help:    "Duration of http requests",
-			Buckets: prometheus.DefBuckets,
-		},
-		[]string{"method", "endpoint"},
-	)
-
-	CacheDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "cache_request_duration_seconds",
-			Help:    "Duration of cache request",
+			Name:    "grpc_request_duration_seconds",
+			Help:    "Duration of gRPC request",
 			Buckets: prometheus.DefBuckets,
 		},
 		[]string{"method"},
 	)
 
-	DBDuration = prometheus.NewHistogramVec(
+	ExternalAPIRequests = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "db_duration_request_seconds",
-			Help:    "Duration of DB requests",
+			Name:    "external_api_requests_total",
+			Help:    "Total requests to Gurantex API",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method"},
+		[]string{"status"},
 	)
 
-	APIDuration = prometheus.NewHistogramVec(
+	ExternalAPIDuration = promauto.NewHistogram(
 		prometheus.HistogramOpts{
-			Name:    "external_api_request_duration_seconds",
-			Help:    "Duration of external API requests",
+			Name:    "external_api_duration_seconds",
+			Help:    "Duration of Garantex API requests",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method"},
 	)
 
-	AuthDuration = prometheus.NewHistogramVec(
+	DBRequests = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "auth_request_duration_seconds",
-			Help:    "Duration of auth requests",
+			Name: "db_requests_total",
+			Help: "Total database operations",
+		},
+		[]string{"type"},
+	)
+
+	DBDuration = promauto.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "db_duration_seconds",
+			Help:    "Database operations duration",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method"},
+	)
+
+	HealthcheckStatus = promauto.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "healthcheck_status",
+			Help: "Service healthcheck status (1 = healthy, 2 = unhealthy)",
+		},
 	)
 )
 
-func Init() {
-	prometheus.MustRegister(TotalRequests)
-	prometheus.MustRegister(RequestDuration)
-	prometheus.MustRegister(CacheDuration)
-	prometheus.MustRegister(DBDuration)
-	prometheus.MustRegister(APIDuration)
-	prometheus.MustRegister(AuthDuration)
+func InitMetrics(port string) {
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":"+port, nil)
+	}()
 }

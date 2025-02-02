@@ -31,6 +31,7 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 
 	// Список обязательных переменных окружения
 	requiredVars := []string{
+		"PORT",
 		"GARANTEX_API_URL",
 		"CLICKHOUSE_HOST",
 		"CLICKHOUSE_PORT",

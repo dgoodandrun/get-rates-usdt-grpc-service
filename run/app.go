@@ -75,10 +75,10 @@ func (a *App) Run() int {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	eg, ctx := errgroup.WithContext(ctx)
-
 	// Устанавливаем обработчик сигналов
 	signal.Notify(a.Sig, syscall.SIGINT, syscall.SIGTERM)
+
+	eg, ctx := errgroup.WithContext(ctx)
 
 	// Горутина для обработки сигналов завершения работы
 	eg.Go(func() error {

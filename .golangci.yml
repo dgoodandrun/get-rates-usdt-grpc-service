@@ -1,0 +1,21 @@
+linters:
+  enable:
+    - revive
+    - govet
+    - errcheck
+    - staticcheck
+    - gosec
+    - bodyclose
+    - unconvert
+    - goconst
+
+run:
+  skip-dirs:
+    - protogen
+    - vendor
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
