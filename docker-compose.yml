@@ -16,8 +16,9 @@ services:
       - rates-network
 
   clickhouse:
-    image: clickhouse/clickhouse-server:latest
-    container_name: clickhouse
+    image: clickhouse/clickhouse-server:22.3-alpine
+    platform: linux/amd64
+    #container_name: clickhouse
     env_file: .env
     environment:
       CLICKHOUSE_DB: ${CLICKHOUSE_DB}

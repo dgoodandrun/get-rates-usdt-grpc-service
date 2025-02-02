@@ -25,6 +25,9 @@ cd get-rates-usdt-grpc-service
 go mod download
 make protoc
 ```
+### Настройка
+Параметры для настройки сервиса в корне проекта файл .env
+
 ### Запуск
 ```bash
 docker-compose up --build
