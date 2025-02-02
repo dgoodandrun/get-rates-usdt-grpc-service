@@ -24,11 +24,12 @@ git clone https://github.com/dgoodandrun/get-rates-usdt-grpc-service.git
 cd get-rates-usdt-grpc-service
 go mod download
 make protoc
-
+```
 ### Запуск
 ```bash
 docker-compose up --build
-
+```
 ### Запуск тестов
 ```bash
 make test
+```
