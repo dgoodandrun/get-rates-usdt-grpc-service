@@ -8,6 +8,7 @@ import (
 type AppConf struct {
 	AppName     string
 	Port        string
+	MetricsPort string
 	GarantexURL string
 	ClickHouse  ClickHouseConfig
 }
@@ -32,6 +33,7 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 	// Список обязательных переменных окружения
 	requiredVars := []string{
 		"PORT",
+		"METRICS_PORT",
 		"GARANTEX_API_URL",
 		"CLICKHOUSE_HOST",
 		"CLICKHOUSE_PORT",
@@ -49,6 +51,7 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 
 	a.AppName = viper.GetString("APP_NAME")
 	a.Port = viper.GetString("PORT")
+	a.MetricsPort = viper.GetString("METRICS_PORT")
 	a.GarantexURL = viper.GetString("GARANTEX_API_URL")
 	a.ClickHouse.Host = viper.GetString("CLICKHOUSE_HOST")
 	a.ClickHouse.Port = viper.GetInt("CLICKHOUSE_PORT")

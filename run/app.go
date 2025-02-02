@@ -4,6 +4,8 @@ import (
 	"context"
 	"get-rates-usdt-grpc-service/config"
 	"get-rates-usdt-grpc-service/internal/infrastracture/errors"
+	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
+	"get-rates-usdt-grpc-service/internal/infrastracture/trace"
 	"get-rates-usdt-grpc-service/internal/modules/controller"
 	"get-rates-usdt-grpc-service/internal/modules/service"
 	"get-rates-usdt-grpc-service/internal/modules/storage"
@@ -35,11 +37,12 @@ type Bootstraper interface {
 
 // App - структура приложения
 type App struct {
-	conf    config.AppConf
-	logger  *zap.SugaredLogger
-	grpcSrv *grpc.Server
-	Sig     chan os.Signal
-	lis     net.Listener
+	conf         config.AppConf
+	logger       *zap.SugaredLogger
+	grpcSrv      *grpc.Server
+	Sig          chan os.Signal
+	lis          net.Listener
+	tracerCloser func()
 }
 
 // NewApp - конструктор приложения
@@ -49,6 +52,14 @@ func NewApp(conf config.AppConf, logger *zap.SugaredLogger) *App {
 
 // Bootstrap - инициализация приложения
 func (a *App) Bootstrap(options ...interface{}) Runner {
+	metrics.InitMetrics(a.conf.MetricsPort)
+
+	closer, err := trace.InitTracer("rates-service", a.logger)
+	if err != nil {
+		a.logger.Fatal("failed to init tracer: ", err)
+	}
+	a.tracerCloser = closer
+
 	lis, err := net.Listen("tcp", ":"+a.conf.Port)
 	if err != nil {
 		a.logger.Fatal("failed to listen tcp Geo service: ", err)
@@ -72,6 +83,12 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 
 // Run - запуск приложения
 func (a *App) Run() int {
+	defer func() {
+		if a.tracerCloser != nil {
+			a.tracerCloser()
+		}
+	}()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

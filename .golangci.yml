@@ -9,13 +9,10 @@ linters:
     - unconvert
     - goconst
 
-run:
-  skip-dirs:
-    - protogen
-    - vendor
-
 issues:
   exclude-use-default: false
+  exclude-dirs:
+    - protogen
+    - vendor
   max-issues-per-linter: 0
   max-same-issues: 0
-
