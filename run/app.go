@@ -66,12 +66,13 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 	}
 	a.lis = lis
 
-	chStorage, err := storage.NewClickHouseStorage(a.conf.ClickHouse)
+	pgStorage, err := storage.NewPostgresStorage(a.conf.Postgres)
+	//chStorage, err := storage.NewClickHouseStorage(a.conf.ClickHouse)
 	if err != nil {
-		a.logger.Fatal("Failed to init ClickHouse: ", err)
+		a.logger.Fatal("Failed to init PostgresSQL: ", err)
 	}
 
-	ratesService := service.NewRatesService(chStorage, a.conf.GarantexURL)
+	ratesService := service.NewRatesService(pgStorage, a.conf.GarantexURL)
 	ratesController := controller.NewRatesController(ratesService)
 
 	a.grpcSrv = grpc.NewServer()

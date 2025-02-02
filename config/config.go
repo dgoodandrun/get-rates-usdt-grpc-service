@@ -10,16 +10,24 @@ type AppConf struct {
 	Port        string
 	MetricsPort string
 	GarantexURL string
-	ClickHouse  ClickHouseConfig
+	Postgres    PostgresConfig
 }
 
-type ClickHouseConfig struct {
+type PostgresConfig struct {
 	Host     string
 	Port     int
 	DBName   string
 	User     string
 	Password string
 }
+
+//type ClickHouseConfig struct {
+//	Host     string
+//	Port     int
+//	DBName   string
+//	User     string
+//	Password string
+//}
 
 func (a *AppConf) Init(logger *zap.SugaredLogger) {
 	logger.Info("Initializing configuration...")
@@ -35,11 +43,11 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 		"PORT",
 		"METRICS_PORT",
 		"GARANTEX_API_URL",
-		"CLICKHOUSE_HOST",
-		"CLICKHOUSE_PORT",
-		"CLICKHOUSE_DB",
-		"CLICKHOUSE_USER",
-		"CLICKHOUSE_PASSWORD",
+		"POSTGRES_HOST",
+		"POSTGRES_PORT",
+		"POSTGRES_DB",
+		"POSTGRES_USER",
+		"POSTGRES_PASSWORD",
 	}
 
 	// Проверяем все обязательные переменные
@@ -53,11 +61,16 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 	a.Port = viper.GetString("PORT")
 	a.MetricsPort = viper.GetString("METRICS_PORT")
 	a.GarantexURL = viper.GetString("GARANTEX_API_URL")
-	a.ClickHouse.Host = viper.GetString("CLICKHOUSE_HOST")
-	a.ClickHouse.Port = viper.GetInt("CLICKHOUSE_PORT")
-	a.ClickHouse.DBName = viper.GetString("CLICKHOUSE_DB")
-	a.ClickHouse.User = viper.GetString("CLICKHOUSE_USER")
-	a.ClickHouse.Password = viper.GetString("CLICKHOUSE_PASSWORD")
+	a.Postgres.Host = viper.GetString("POSTGRES_HOST")
+	a.Postgres.Port = viper.GetInt("POSTGRES_PORT")
+	a.Postgres.DBName = viper.GetString("POSTGRES_DB")
+	a.Postgres.User = viper.GetString("POSTGRES_USER")
+	a.Postgres.Password = viper.GetString("POSTGRES_PASSWORD")
+	//a.ClickHouse.Host = viper.GetString("CLICKHOUSE_HOST")
+	//a.ClickHouse.Port = viper.GetInt("CLICKHOUSE_PORT")
+	//a.ClickHouse.DBName = viper.GetString("CLICKHOUSE_DB")
+	//a.ClickHouse.User = viper.GetString("CLICKHOUSE_USER")
+	//a.ClickHouse.Password = viper.GetString("CLICKHOUSE_PASSWORD")
 
 	logger.Info("Configuration loaded successfully")
 }
