@@ -9,8 +9,10 @@ services:
     ports:
       - "50051:50051"
       - "9090:9090"
+    volumes:
+      - ./migrations:/app/migrations
     depends_on:
-      clickhouse:
+      postgres:
         condition: service_healthy
     networks:
       - rates-network

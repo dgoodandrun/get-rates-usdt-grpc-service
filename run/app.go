@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"net"
 	"os"
 	"os/signal"
@@ -54,29 +55,30 @@ func NewApp(conf config.AppConf, logger *zap.SugaredLogger) *App {
 func (a *App) Bootstrap(options ...interface{}) Runner {
 	metrics.InitMetrics(a.conf.MetricsPort)
 
-	closer, err := trace.InitTracer("rates-service", a.logger)
+	closer, err := trace.InitTracer(a.conf.AppName, a.logger)
 	if err != nil {
-		a.logger.Fatal("failed to init tracer: ", err)
+		a.logger.Fatalf("failed to init tracer: %v", err)
 	}
 	a.tracerCloser = closer
 
 	lis, err := net.Listen("tcp", ":"+a.conf.Port)
 	if err != nil {
-		a.logger.Fatal("failed to listen tcp Geo service: ", err)
+		a.logger.Fatalf("failed to listen tcp %s: %v", a.conf.AppName, err)
 	}
 	a.lis = lis
 
 	pgStorage, err := storage.NewPostgresStorage(a.conf.Postgres)
 	//chStorage, err := storage.NewClickHouseStorage(a.conf.ClickHouse)
 	if err != nil {
-		a.logger.Fatal("Failed to init PostgresSQL: ", err)
+		a.logger.Fatalf("Failed to init database: %v", err)
 	}
 
-	ratesService := service.NewRatesService(pgStorage, a.conf.GarantexURL)
+	ratesService := service.NewRatesService(pgStorage, a.conf.GarantexURL, a.conf.Market)
 	ratesController := controller.NewRatesController(ratesService)
 
 	a.grpcSrv = grpc.NewServer()
 	pb.RegisterRatesServiceServer(a.grpcSrv, ratesController)
+	reflection.Register(a.grpcSrv)
 
 	// возвращаем приложение
 	return a
@@ -105,7 +107,7 @@ func (a *App) Run() int {
 			a.logger.Infof("Received signal: %v, shutting down...", sig)
 			cancel()
 			a.grpcSrv.GracefulStop()
-			a.logger.Info("Geo service stopped gracefully")
+			a.logger.Infof("%s stopped gracefully", a.conf.AppName)
 			return nil
 		case <-ctx.Done():
 			return ctx.Err()
@@ -114,9 +116,9 @@ func (a *App) Run() int {
 
 	// Горутина для запуска gRPC сервера
 	eg.Go(func() error {
-		a.logger.Infof("Geo service started on port: %s", a.conf.Port)
+		a.logger.Infof("%s started on port: %s", a.conf.AppName, a.conf.Port)
 		if err := a.grpcSrv.Serve(a.lis); err != nil && err != grpc.ErrServerStopped {
-			a.logger.Errorf("Failed to serve Geo service: %v", err)
+			a.logger.Errorf("Failed to serve %s: %v", a.conf.AppName, err)
 			return err
 		}
 		return nil
@@ -124,7 +126,7 @@ func (a *App) Run() int {
 
 	// Ожидаем завершения всех горутин
 	if err := eg.Wait(); err != nil {
-		a.logger.Errorf("Geo service shutdown with error: %v", err)
+		a.logger.Errorf("%s shutdown with error: %v", a.conf.AppName, err)
 		return errors.GeneralError
 	}
 

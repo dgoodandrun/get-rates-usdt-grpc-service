@@ -10,6 +10,7 @@ type AppConf struct {
 	Port        string
 	MetricsPort string
 	GarantexURL string
+	Market      string
 	Postgres    PostgresConfig
 }
 
@@ -43,6 +44,7 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 		"PORT",
 		"METRICS_PORT",
 		"GARANTEX_API_URL",
+		"GARANTEX_API_URL_MARKET",
 		"POSTGRES_HOST",
 		"POSTGRES_PORT",
 		"POSTGRES_DB",
@@ -61,6 +63,7 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 	a.Port = viper.GetString("PORT")
 	a.MetricsPort = viper.GetString("METRICS_PORT")
 	a.GarantexURL = viper.GetString("GARANTEX_API_URL")
+	a.Market = viper.GetString("GARANTEX_API_URL_MARKET")
 	a.Postgres.Host = viper.GetString("POSTGRES_HOST")
 	a.Postgres.Port = viper.GetInt("POSTGRES_PORT")
 	a.Postgres.DBName = viper.GetString("POSTGRES_DB")

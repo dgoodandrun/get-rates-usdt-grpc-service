@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="rates@clickhouse" uuid="11f2628c-d83e-46ff-81bf-c1948bc52bf0">
-      <driver-ref>clickhouse</driver-ref>
+    <data-source source="LOCAL" name="rates@localhost" uuid="9ed59cbc-3258-4643-8e64-5b1e41095402">
+      <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>com.clickhouse.jdbc.ClickHouseDriver</jdbc-driver>
-      <jdbc-url>jdbc:clickhouse://clickhouse:9000/rates</jdbc-url>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/rates</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

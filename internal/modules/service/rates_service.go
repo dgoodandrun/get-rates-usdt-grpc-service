@@ -10,20 +10,26 @@ import (
 	"net/http"
 )
 
-type RatesService struct {
-	storage storage.RatesStorage
-	apiURL  string
+type RatesService interface {
+	GetCurrentRate(ctx context.Context) (*models.Rate, error)
 }
 
-func NewRatesService(storage storage.RatesStorage, apiURL string) *RatesService {
-	return &RatesService{
+type ratesService struct {
+	storage storage.RatesStorage
+	apiURL  string
+	market  string
+}
+
+func NewRatesService(storage storage.RatesStorage, apiURL string, market string) RatesService {
+	return &ratesService{
 		storage: storage,
 		apiURL:  apiURL,
+		market:  market,
 	}
 }
 
-func (s *RatesService) GetCurrentRate(ctx context.Context) (*models.Rate, error) {
-	resp, err := http.Get(fmt.Sprintf(s.apiURL, "usdt"))
+func (s *ratesService) GetCurrentRate(ctx context.Context) (*models.Rate, error) {
+	resp, err := http.Get(fmt.Sprintf(s.apiURL, s.market))
 	if err != nil {
 		return nil, err
 	}

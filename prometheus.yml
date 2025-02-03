@@ -7,9 +7,13 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: "clickhouse"
+  - job_name: "postgres"
     static_configs:
-      - targets: [ 'clickhouse:9363' ]
+      - targets: [ 'postgres:5432' ]
+
+#  - job_name: "clickhouse"
+#    static_configs:
+#      - targets: [ 'clickhouse:9363' ]
 
   - job_name: "node"
     static_configs:

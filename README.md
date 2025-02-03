@@ -1,10 +1,10 @@
 # Get Rates USDT GRPC Service
 
-GRPC-сервис для получения курса USDT с биржи Garantex с сохранением данных в ClickHouse.
+GRPC-сервис для получения курса USDT с биржи Garantex с сохранением данных в PostgreSQL.
 
 ## Основные функции
 - Получение курса USDT через GRPC метод GetRates
-- Сохранение данных с меткой времени в ClickHouse
+- Сохранение данных с меткой времени в PostgreSQL
 - Healthcheck для проверки работоспособности
 - Мониторинг через Prometheus
 - Трассировка запросов через OpenTelemetry
@@ -15,7 +15,7 @@ GRPC-сервис для получения курса USDT с биржи Garant
 - Go 1.22+
 - Docker и Docker Compose
 - Protoc (для генерации кода из .proto)
-- ClickHouse (запускается через Docker)
+- PostgreSQL (запускается через Docker)
 
 
 ### Установка
@@ -27,6 +27,25 @@ make protoc
 ```
 ### Настройка
 Параметры для настройки сервиса в корне проекта файл .env
+# App name
+APPNAME=getRates
+
+# GRPC
+PORT=50051
+
+# Prometheus
+METRICS_PORT=9090
+
+# PostgreSQL
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=rates
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+# Garantex API
+GARANTEX_API_URL=https://garantex.org/api/v2/depth?market=%s
+GARANTEX_API_URL_MARKET=btcusdt
 
 ### Запуск
 ```bash

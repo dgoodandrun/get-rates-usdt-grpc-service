@@ -8,10 +8,10 @@ import (
 
 type RatesController struct {
 	pb.UnimplementedRatesServiceServer
-	service *service.RatesService
+	service service.RatesService
 }
 
-func NewRatesController(s *service.RatesService) *RatesController {
+func NewRatesController(s service.RatesService) *RatesController {
 	return &RatesController{service: s}
 }
 

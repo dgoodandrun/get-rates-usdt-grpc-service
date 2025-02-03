@@ -50,5 +50,6 @@ func (s *PostgresStorage) SaveRate(ctx context.Context, rate *models.Rate) error
 		rate.Bid,
 		time.Now(),
 	)
+
 	return err
 }
