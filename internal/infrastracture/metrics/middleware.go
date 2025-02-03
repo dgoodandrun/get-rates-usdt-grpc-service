@@ -12,14 +12,14 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		res, err := handler(ctx, req)
 		duration := time.Since(start).Seconds()
 
-		sts := "success"
+		status := "success"
 		if err != nil {
-			sts = "error"
+			status = "error"
 		}
 
 		GRPCRequestsTotal.WithLabelValues(
 			info.FullMethod,
-			sts,
+			status,
 		).Inc()
 
 		GRPCRequestDuration.WithLabelValues(
