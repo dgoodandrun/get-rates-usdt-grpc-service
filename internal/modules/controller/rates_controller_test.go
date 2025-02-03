@@ -52,9 +52,30 @@ func TestRatesController_HealthCheck(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	controller := NewRatesController(nil)
-	resp, err := controller.HealthCheck(context.Background(), &pb.HealthCheckRequest{})
+	mockService := mocks.NewMockRatesService(ctrl)
+	controller := NewRatesController(mockService)
 
-	assert.NoError(t, err)
-	assert.Equal(t, pb.HealthCheckResponse_SERVING, resp.Status)
+	t.Run("Healthy", func(t *testing.T) {
+		mockService.EXPECT().
+			HealthCheck(gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		resp, err := controller.HealthCheck(context.Background(), &pb.HealthCheckRequest{})
+
+		assert.NoError(t, err)
+		assert.Equal(t, pb.HealthCheckResponse_SERVING, resp.Status)
+	})
+
+	t.Run("Unhealthy", func(t *testing.T) {
+		mockService.EXPECT().
+			HealthCheck(gomock.Any()).
+			Return(assert.AnError).
+			Times(1)
+
+		resp, err := controller.HealthCheck(context.Background(), &pb.HealthCheckRequest{})
+
+		assert.NoError(t, err)
+		assert.Equal(t, pb.HealthCheckResponse_NOT_SERVING, resp.Status)
+	})
 }

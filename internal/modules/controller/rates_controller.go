@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
 	"get-rates-usdt-grpc-service/internal/modules/service"
 	pb "get-rates-usdt-grpc-service/protogen/golang/get-rates"
 )
@@ -29,7 +30,12 @@ func (c *RatesController) GetRates(ctx context.Context, req *pb.GetRatesRequest)
 }
 
 func (c *RatesController) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
-	return &pb.HealthCheckResponse{
-		Status: pb.HealthCheckResponse_SERVING,
-	}, nil
+	status := pb.HealthCheckResponse_SERVING
+	if err := c.service.HealthCheck(ctx); err != nil {
+		status = pb.HealthCheckResponse_NOT_SERVING
+	}
+
+	metrics.HealthcheckStatus.Set(float64(status))
+
+	return &pb.HealthCheckResponse{Status: status}, nil
 }

@@ -42,20 +42,21 @@ var (
 		},
 	)
 
-	DBRequests = promauto.NewHistogramVec(
-		prometheus.HistogramOpts{
+	DBRequests = promauto.NewCounterVec(
+		prometheus.CounterOpts{
 			Name: "db_requests_total",
 			Help: "Total database operations",
 		},
-		[]string{"type"},
+		[]string{"operation"},
 	)
 
-	DBDuration = promauto.NewHistogram(
+	DBDuration = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "db_duration_seconds",
 			Help:    "Database operations duration",
 			Buckets: prometheus.DefBuckets,
 		},
+		[]string{"operation"},
 	)
 
 	HealthcheckStatus = promauto.NewGauge(

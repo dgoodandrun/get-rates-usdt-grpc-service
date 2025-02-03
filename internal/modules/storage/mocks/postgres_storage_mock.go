@@ -35,6 +35,20 @@ func (m *MockRatesStorage) EXPECT() *MockRatesStorageMockRecorder {
 	return m.recorder
 }
 
+// HealthCheck mocks base method.
+func (m *MockRatesStorage) HealthCheck(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HealthCheck", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// HealthCheck indicates an expected call of HealthCheck.
+func (mr *MockRatesStorageMockRecorder) HealthCheck(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockRatesStorage)(nil).HealthCheck), ctx)
+}
+
 // SaveRate mocks base method.
 func (m *MockRatesStorage) SaveRate(ctx context.Context, rate *models.Rate) error {
 	m.ctrl.T.Helper()

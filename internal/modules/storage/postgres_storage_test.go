@@ -2,21 +2,23 @@ package storage
 
 import (
 	"context"
+
 	"errors"
-	"get-rates-usdt-grpc-service/internal/models"
-	"github.com/pashagolub/pgxmock/v2"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"get-rates-usdt-grpc-service/internal/models"
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPostgresStorage_SaveRate(t *testing.T) {
-	mockPool, err := pgxmock.NewPool()
+	db, mock, err := sqlmock.New()
 	if err != nil {
-		t.Fatal("Error creating mock pool:", err)
+		t.Fatal("Error creating mock database:", err)
 	}
-	defer mockPool.Close()
+	defer db.Close()
 
-	storage := &PostgresStorage{pool: mockPool}
+	storage := &PostgresStorage{db: db}
 	testRate := &models.Rate{
 		Ask:       1111.11,
 		Bid:       2222.22,
@@ -24,26 +26,26 @@ func TestPostgresStorage_SaveRate(t *testing.T) {
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		mockPool.ExpectExec("INSERT INTO rates").
+		mock.ExpectExec("INSERT INTO rates").
 			WithArgs(
 				testRate.Timestamp,
 				testRate.Ask,
 				testRate.Bid,
-				pgxmock.AnyArg(),
+				sqlmock.AnyArg(),
 			).
-			WillReturnResult(pgxmock.NewResult("INSERT", 1))
+			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		err := storage.SaveRate(context.Background(), testRate)
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		mockPool.ExpectExec("INSERT INTO rates").
+		mock.ExpectExec("INSERT INTO rates").
 			WithArgs(
 				testRate.Timestamp,
 				testRate.Ask,
 				testRate.Bid,
-				pgxmock.AnyArg(),
+				sqlmock.AnyArg(),
 			).
 			WillReturnError(errors.New("database error"))
 
@@ -51,5 +53,5 @@ func TestPostgresStorage_SaveRate(t *testing.T) {
 		assert.ErrorContains(t, err, "database error")
 	})
 
-	assert.NoError(t, mockPool.ExpectationsWereMet())
+	assert.NoError(t, mock.ExpectationsWereMet())
 }

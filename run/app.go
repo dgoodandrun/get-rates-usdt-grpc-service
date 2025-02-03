@@ -76,7 +76,7 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 	ratesService := service.NewRatesService(pgStorage, a.conf.GarantexURL, a.conf.Market)
 	ratesController := controller.NewRatesController(ratesService)
 
-	a.grpcSrv = grpc.NewServer()
+	a.grpcSrv = grpc.NewServer(grpc.UnaryInterceptor(metrics.UnaryServerInterceptor()))
 	pb.RegisterRatesServiceServer(a.grpcSrv, ratesController)
 	reflection.Register(a.grpcSrv)
 

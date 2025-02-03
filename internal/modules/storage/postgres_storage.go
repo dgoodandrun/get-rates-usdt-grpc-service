@@ -2,12 +2,12 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"get-rates-usdt-grpc-service/config"
 	"get-rates-usdt-grpc-service/internal/infrastracture/db"
+	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
 	"get-rates-usdt-grpc-service/internal/models"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
 )
 
@@ -15,19 +15,11 @@ import (
 
 type RatesStorage interface {
 	SaveRate(ctx context.Context, rate *models.Rate) error
-}
-
-type PGXPool interface {
-	Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
-	Close()
+	HealthCheck(ctx context.Context) error
 }
 
 type PostgresStorage struct {
-	pool PGXPool
-}
-
-func newPostgresStorageWithPool(pool PGXPool) *PostgresStorage {
-	return &PostgresStorage{pool: pool}
+	db *sql.DB
 }
 
 func NewPostgresStorage(cfg config.PostgresConfig) (*PostgresStorage, error) {
@@ -45,23 +37,38 @@ func NewPostgresStorage(cfg config.PostgresConfig) (*PostgresStorage, error) {
 		return nil, fmt.Errorf("migrations failed: %w", err)
 	}
 
-	pool, err := pgxpool.New(context.Background(), dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
+		return nil, fmt.Errorf("failed to connect: %w", err)
 	}
 
-	return newPostgresStorageWithPool(pool), nil
+	return &PostgresStorage{db: db}, nil
 }
 
 func (s *PostgresStorage) SaveRate(ctx context.Context, rate *models.Rate) error {
-	_, err := s.pool.Exec(ctx, `
-		INSERT INTO rates (timestamp, ask, bid, created_at)
-		VALUES ($1, $2, $3, $4)`,
+	start := time.Now()
+
+	_, err := s.db.ExecContext(ctx, `
+        INSERT INTO rates (timestamp, ask, bid, created_at)
+        VALUES ($1, $2, $3, $4)`,
 		rate.Timestamp,
 		rate.Ask,
 		rate.Bid,
 		time.Now(),
 	)
 
+	duration := time.Since(start).Seconds()
+	operation := "insert"
+	if err != nil {
+		operation = "insert_error"
+	}
+
+	metrics.DBRequests.WithLabelValues(operation).Inc()
+	metrics.DBDuration.WithLabelValues(operation).Observe(duration)
+
 	return err
+}
+
+func (s *PostgresStorage) HealthCheck(ctx context.Context) error {
+	return s.db.PingContext(ctx)
 }

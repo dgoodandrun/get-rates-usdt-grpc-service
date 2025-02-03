@@ -4,16 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
 	"get-rates-usdt-grpc-service/internal/models"
 	"get-rates-usdt-grpc-service/internal/modules/storage"
 	"io"
 	"net/http"
+	"time"
 )
 
 //go:generate mockgen -source=rates_service.go -destination=mocks/rates_service_mock.go -package=mocks
 
 type RatesService interface {
 	GetCurrentRate(ctx context.Context) (*models.Rate, error)
+	HealthCheck(ctx context.Context) error
 }
 
 type ratesService struct {
@@ -31,11 +34,21 @@ func NewRatesService(storage storage.RatesStorage, apiURL string, market string)
 }
 
 func (s *ratesService) GetCurrentRate(ctx context.Context) (*models.Rate, error) {
+	start := time.Now()
 	resp, err := http.Get(fmt.Sprintf(s.apiURL, s.market))
-	if err != nil {
+	duration := time.Since(start).Seconds()
+
+	status := "success"
+	if err != nil || resp.StatusCode != http.StatusOK {
+		status = "error"
+		metrics.ExternalAPIRequests.WithLabelValues(status).Observe(duration)
+		metrics.ExternalAPIDuration.Observe(duration)
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	metrics.ExternalAPIRequests.WithLabelValues(status).Observe(duration)
+	metrics.ExternalAPIDuration.Observe(duration)
 
 	body, _ := io.ReadAll(resp.Body)
 	var data struct {
@@ -71,4 +84,18 @@ func (s *ratesService) GetCurrentRate(ctx context.Context) (*models.Rate, error)
 	}
 
 	return rate, nil
+}
+
+func (s *ratesService) HealthCheck(ctx context.Context) error {
+	resp, err := http.Get(fmt.Sprintf(s.apiURL, s.market))
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API unavailable: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if err := s.storage.HealthCheck(ctx); err != nil {
+		return fmt.Errorf("storage error: %v", err)
+	}
+
+	return nil
 }

@@ -49,3 +49,17 @@ func (mr *MockRatesServiceMockRecorder) GetCurrentRate(ctx interface{}) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentRate", reflect.TypeOf((*MockRatesService)(nil).GetCurrentRate), ctx)
 }
+
+// HealthCheck mocks base method.
+func (m *MockRatesService) HealthCheck(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HealthCheck", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// HealthCheck indicates an expected call of HealthCheck.
+func (mr *MockRatesServiceMockRecorder) HealthCheck(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockRatesService)(nil).HealthCheck), ctx)
+}
