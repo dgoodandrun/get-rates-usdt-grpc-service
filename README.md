@@ -27,26 +27,23 @@ make protoc
 ```
 ### Настройка
 Параметры для настройки сервиса в корне проекта файл .env
+```bash
 # App name
 APPNAME=getRates
-
 # GRPC
 PORT=50051
-
 # Prometheus
 METRICS_PORT=9090
-
 # PostgreSQL
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 POSTGRES_DB=rates
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-
 # Garantex API
 GARANTEX_API_URL=https://garantex.org/api/v2/depth?market=%s
 GARANTEX_API_URL_MARKET=btcusdt
-
+```
 ### Запуск
 ```bash
 docker-compose up --build
