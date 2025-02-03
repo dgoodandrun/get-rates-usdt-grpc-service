@@ -6,16 +6,28 @@ import (
 	"get-rates-usdt-grpc-service/config"
 	"get-rates-usdt-grpc-service/internal/infrastracture/db"
 	"get-rates-usdt-grpc-service/internal/models"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
 )
+
+//go:generate mockgen -source=postgres_storage.go -destination=mocks/postgres_storage_mock.go -package=mocks
 
 type RatesStorage interface {
 	SaveRate(ctx context.Context, rate *models.Rate) error
 }
 
+type PGXPool interface {
+	Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
+	Close()
+}
+
 type PostgresStorage struct {
-	pool *pgxpool.Pool
+	pool PGXPool
+}
+
+func newPostgresStorageWithPool(pool PGXPool) *PostgresStorage {
+	return &PostgresStorage{pool: pool}
 }
 
 func NewPostgresStorage(cfg config.PostgresConfig) (*PostgresStorage, error) {
@@ -38,7 +50,7 @@ func NewPostgresStorage(cfg config.PostgresConfig) (*PostgresStorage, error) {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 	}
 
-	return &PostgresStorage{pool: pool}, nil
+	return newPostgresStorageWithPool(pool), nil
 }
 
 func (s *PostgresStorage) SaveRate(ctx context.Context, rate *models.Rate) error {

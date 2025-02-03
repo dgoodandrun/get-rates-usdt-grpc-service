@@ -10,6 +10,8 @@ import (
 	"net/http"
 )
 
+//go:generate mockgen -source=rates_service.go -destination=mocks/rates_service_mock.go -package=mocks
+
 type RatesService interface {
 	GetCurrentRate(ctx context.Context) (*models.Rate, error)
 }
