@@ -6,12 +6,13 @@ import (
 )
 
 type AppConf struct {
-	AppName     string
-	Port        string
-	MetricsPort string
-	GarantexURL string
-	Market      string
-	Postgres    PostgresConfig
+	AppName      string
+	Port         string
+	MetricsPort  string
+	TraceColPort string
+	GarantexURL  string
+	Market       string
+	Postgres     PostgresConfig
 }
 
 type PostgresConfig struct {
@@ -37,12 +38,13 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 	viper.AutomaticEnv()
 
 	// Устанавливаем значения по умолчанию
-	viper.SetDefault("APP_NAME", "getRates")
+	viper.SetDefault("APP_NAME", "rates_service")
 
 	// Список обязательных переменных окружения
 	requiredVars := []string{
-		"PORT",
+		"APP_PORT",
 		"METRICS_PORT",
+		"JAEGER_COLLECTOR_PORT",
 		"GARANTEX_API_URL",
 		"GARANTEX_API_URL_MARKET",
 		"POSTGRES_HOST",
@@ -60,8 +62,9 @@ func (a *AppConf) Init(logger *zap.SugaredLogger) {
 	}
 
 	a.AppName = viper.GetString("APP_NAME")
-	a.Port = viper.GetString("PORT")
+	a.Port = viper.GetString("APP_PORT")
 	a.MetricsPort = viper.GetString("METRICS_PORT")
+	a.TraceColPort = viper.GetString("JAEGER_COLLECTOR_PORT")
 	a.GarantexURL = viper.GetString("GARANTEX_API_URL")
 	a.Market = viper.GetString("GARANTEX_API_URL_MARKET")
 	a.Postgres.Host = viper.GetString("POSTGRES_HOST")

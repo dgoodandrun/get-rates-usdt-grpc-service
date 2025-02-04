@@ -5,6 +5,7 @@ import (
 	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
 	"get-rates-usdt-grpc-service/internal/modules/service"
 	pb "get-rates-usdt-grpc-service/protogen/golang/get-rates"
+	"log"
 )
 
 type RatesController struct {
@@ -32,6 +33,7 @@ func (c *RatesController) GetRates(ctx context.Context, req *pb.GetRatesRequest)
 func (c *RatesController) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
 	status := pb.HealthCheckResponse_SERVING
 	if err := c.service.HealthCheck(ctx); err != nil {
+		log.Println(err)
 		status = pb.HealthCheckResponse_NOT_SERVING
 	}
 

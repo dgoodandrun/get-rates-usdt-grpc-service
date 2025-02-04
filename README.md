@@ -16,6 +16,8 @@ GRPC-сервис для получения курса USDT с биржи Garant
 - Docker и Docker Compose
 - Protoc (для генерации кода из .proto)
 - PostgreSQL (запускается через Docker)
+- Prometheus (запускается через Docker)
+- Jaeger (запускается через Docker)
 
 
 ### Установка
@@ -40,6 +42,9 @@ POSTGRES_PORT=5432
 POSTGRES_DB=rates
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
+# Jaeger
+JAEGER_WEB_UI_PORT=16686
+JAEGER_COLLECTOR_PORT=14268
 # Garantex API
 GARANTEX_API_URL=https://garantex.org/api/v2/depth?market=%s
 GARANTEX_API_URL_MARKET=btcusdt
@@ -51,4 +56,8 @@ docker-compose up --build
 ### Запуск тестов
 ```bash
 make test
+```
+### Запуск линтера
+```bash
+make lint
 ```

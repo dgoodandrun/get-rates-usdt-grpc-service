@@ -18,11 +18,11 @@ type RatesStorage interface {
 	HealthCheck(ctx context.Context) error
 }
 
-type PostgresStorage struct {
+type postgresStorage struct {
 	db *sql.DB
 }
 
-func NewPostgresStorage(cfg config.PostgresConfig) (*PostgresStorage, error) {
+func NewPostgresStorage(cfg config.PostgresConfig) (RatesStorage, error) {
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,
@@ -42,10 +42,10 @@ func NewPostgresStorage(cfg config.PostgresConfig) (*PostgresStorage, error) {
 		return nil, fmt.Errorf("failed to connect: %w", err)
 	}
 
-	return &PostgresStorage{db: db}, nil
+	return &postgresStorage{db: db}, nil
 }
 
-func (s *PostgresStorage) SaveRate(ctx context.Context, rate *models.Rate) error {
+func (s *postgresStorage) SaveRate(ctx context.Context, rate *models.Rate) error {
 	start := time.Now()
 
 	_, err := s.db.ExecContext(ctx, `
@@ -69,6 +69,6 @@ func (s *PostgresStorage) SaveRate(ctx context.Context, rate *models.Rate) error
 	return err
 }
 
-func (s *PostgresStorage) HealthCheck(ctx context.Context) error {
+func (s *postgresStorage) HealthCheck(ctx context.Context) error {
 	return s.db.PingContext(ctx)
 }

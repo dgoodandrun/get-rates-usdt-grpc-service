@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"get-rates-usdt-grpc-service/internal/infrastracture/errors"
 	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
 	"get-rates-usdt-grpc-service/internal/models"
 	"get-rates-usdt-grpc-service/internal/modules/storage"
@@ -80,7 +81,7 @@ func (s *ratesService) GetCurrentRate(ctx context.Context) (*models.Rate, error)
 	}
 
 	if err := s.storage.SaveRate(ctx, rate); err != nil {
-		return rate, fmt.Errorf("failed to save rate: %w", err)
+		return rate, errors.SaveRateError
 	}
 
 	return rate, nil
@@ -89,12 +90,12 @@ func (s *ratesService) GetCurrentRate(ctx context.Context) (*models.Rate, error)
 func (s *ratesService) HealthCheck(ctx context.Context) error {
 	resp, err := http.Get(fmt.Sprintf(s.apiURL, s.market))
 	if err != nil || resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("API unavailable: %v", err)
+		return errors.ApiError
 	}
 	defer resp.Body.Close()
 
 	if err := s.storage.HealthCheck(ctx); err != nil {
-		return fmt.Errorf("storage error: %v", err)
+		return errors.StorageError
 	}
 
 	return nil

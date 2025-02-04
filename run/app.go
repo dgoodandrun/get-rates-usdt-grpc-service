@@ -10,6 +10,7 @@ import (
 	"get-rates-usdt-grpc-service/internal/modules/service"
 	"get-rates-usdt-grpc-service/internal/modules/storage"
 	pb "get-rates-usdt-grpc-service/protogen/golang/get-rates"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -26,14 +27,14 @@ type Application interface {
 	Bootstraper
 }
 
-// Runner - интерфейс запуска приложения
-type Runner interface {
-	Run() int
-}
-
 // Bootstraper - интерфейс инициализации приложения
 type Bootstraper interface {
 	Bootstrap(options ...interface{}) Runner
+}
+
+// Runner - интерфейс запуска приложения
+type Runner interface {
+	Run() int
 }
 
 // App - структура приложения
@@ -55,7 +56,7 @@ func NewApp(conf config.AppConf, logger *zap.SugaredLogger) *App {
 func (a *App) Bootstrap(options ...interface{}) Runner {
 	metrics.InitMetrics(a.conf.MetricsPort)
 
-	closer, err := trace.InitTracer(a.conf.AppName, a.logger)
+	closer, err := trace.InitTracer(a.conf.AppName, a.conf.TraceColPort, a.logger)
 	if err != nil {
 		a.logger.Fatalf("failed to init tracer: %v", err)
 	}
@@ -76,11 +77,16 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 	ratesService := service.NewRatesService(pgStorage, a.conf.GarantexURL, a.conf.Market)
 	ratesController := controller.NewRatesController(ratesService)
 
-	a.grpcSrv = grpc.NewServer(grpc.UnaryInterceptor(metrics.UnaryServerInterceptor()))
+	a.grpcSrv = grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			metrics.UnaryServerInterceptor(),
+			otelgrpc.UnaryServerInterceptor(),
+		),
+	)
+
 	pb.RegisterRatesServiceServer(a.grpcSrv, ratesController)
 	reflection.Register(a.grpcSrv)
 
-	// возвращаем приложение
 	return a
 }
 

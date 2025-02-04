@@ -7,8 +7,8 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      - "50051:50051"
-      - "9090:9090"
+      - ${APP_PORT}:${APP_PORT}
+      - ${METRICS_PORT}:${METRICS_PORT}
     volumes:
       - ./migrations:/app/migrations
     depends_on:
@@ -24,7 +24,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -56,6 +56,25 @@ services:
 #      retries: 5
 #    networks:
 #        - rates-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - ${METRICS_PORT}:${METRICS_PORT}
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - rates-network
+    depends_on:
+      - rates-service
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    ports:
+      - ${JAEGER_WEB_UI_PORT}:${JAEGER_WEB_UI_PORT}
+      - ${JAEGER_COLLECTOR_PORT}:${JAEGER_COLLECTOR_PORT}
+    networks:
+      - rates-network
 
 networks:
   rates-network:

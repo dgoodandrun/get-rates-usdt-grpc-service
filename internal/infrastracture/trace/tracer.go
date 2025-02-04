@@ -10,8 +10,12 @@ import (
 	"go.uber.org/zap"
 )
 
-func InitTracer(serviceName string, logger *zap.SugaredLogger) (func(), error) {
-	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint())
+func InitTracer(serviceName string, port string, logger *zap.SugaredLogger) (func(), error) {
+	exporter, err := jaeger.New(
+		jaeger.WithCollectorEndpoint(
+			jaeger.WithEndpoint("http://jaeger:"+port+"/api/traces"),
+		),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -18,7 +18,7 @@ func TestPostgresStorage_SaveRate(t *testing.T) {
 	}
 	defer db.Close()
 
-	storage := &PostgresStorage{db: db}
+	storage := &postgresStorage{db: db}
 	testRate := &models.Rate{
 		Ask:       1111.11,
 		Bid:       2222.22,
