@@ -2,7 +2,7 @@ package controller
 
 import (
 	"context"
-	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
+	"get-rates-usdt-grpc-service/internal/infrastructure/metrics"
 	"get-rates-usdt-grpc-service/internal/modules/service"
 	pb "get-rates-usdt-grpc-service/protogen/golang/get-rates"
 	"log"

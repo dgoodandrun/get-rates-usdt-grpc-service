@@ -3,9 +3,9 @@ package run
 import (
 	"context"
 	"get-rates-usdt-grpc-service/config"
-	"get-rates-usdt-grpc-service/internal/infrastracture/errors"
-	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
-	"get-rates-usdt-grpc-service/internal/infrastracture/trace"
+	"get-rates-usdt-grpc-service/internal/infrastructure/errors"
+	"get-rates-usdt-grpc-service/internal/infrastructure/metrics"
+	"get-rates-usdt-grpc-service/internal/infrastructure/trace"
 	"get-rates-usdt-grpc-service/internal/modules/controller"
 	"get-rates-usdt-grpc-service/internal/modules/service"
 	"get-rates-usdt-grpc-service/internal/modules/storage"

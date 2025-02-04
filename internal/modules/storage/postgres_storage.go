@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"get-rates-usdt-grpc-service/config"
-	"get-rates-usdt-grpc-service/internal/infrastracture/db"
-	"get-rates-usdt-grpc-service/internal/infrastracture/metrics"
+	"get-rates-usdt-grpc-service/internal/infrastructure/db"
+	"get-rates-usdt-grpc-service/internal/infrastructure/metrics"
 	"get-rates-usdt-grpc-service/internal/models"
 	"time"
 )

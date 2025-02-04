@@ -8,7 +8,6 @@ services:
     env_file: .env
     ports:
       - ${APP_PORT}:${APP_PORT}
-      - ${METRICS_PORT}:${METRICS_PORT}
     volumes:
       - ./migrations:/app/migrations
     depends_on:
