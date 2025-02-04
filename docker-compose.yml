@@ -74,6 +74,8 @@ services:
       - ${JAEGER_COLLECTOR_PORT}:${JAEGER_COLLECTOR_PORT}
     networks:
       - rates-network
+    depends_on:
+      - rates-service
 
 networks:
   rates-network:

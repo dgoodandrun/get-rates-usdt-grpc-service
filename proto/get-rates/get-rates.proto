@@ -2,11 +2,6 @@ syntax = "proto3";
 
 option go_package = "get-rates-usdt-grpc-service/protogen/golang/get-rates";
 
-service RatesService {
-  rpc GetRates(GetRatesRequest) returns (GetRatesResponse);
-  rpc HealthCheck(HealthCheckRequest) returns(HealthCheckResponse);
-}
-
 message GetRatesRequest {}
 
 message GetRatesResponse {
@@ -24,4 +19,9 @@ message HealthCheckResponse {
     NOT_SERVING = 2;
   }
   ServingStatus status = 1;
+}
+
+service RatesService {
+  rpc GetRates(GetRatesRequest) returns (GetRatesResponse);
+  rpc HealthCheck(HealthCheckRequest) returns(HealthCheckResponse);
 }

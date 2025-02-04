@@ -10,6 +10,7 @@ import (
 	"get-rates-usdt-grpc-service/internal/modules/storage"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -68,10 +69,10 @@ func (s *ratesService) GetCurrentRate(ctx context.Context) (*models.Rate, error)
 
 	ask, bid := 0.0, 0.0
 	if len(data.Asks) > 0 {
-		fmt.Sscanf(data.Asks[0].Price, "%f", &ask)
+		ask, _ = strconv.ParseFloat(data.Asks[0].Price, 64)
 	}
 	if len(data.Bids) > 0 {
-		fmt.Sscanf(data.Bids[0].Price, "%f", &bid)
+		bid, _ = strconv.ParseFloat(data.Bids[0].Price, 64)
 	}
 
 	rate := &models.Rate{
