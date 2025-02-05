@@ -40,6 +40,7 @@ func TestRatesService_GetCurrentRate(t *testing.T) {
 	t.Run("HTTP Error", func(t *testing.T) {
 		brokenService := NewRatesService(mockStorage, "invalid-url", "usdt")
 		_, err := brokenService.GetCurrentRate(context.Background())
+
 		assert.Error(t, err)
 	})
 }
@@ -63,6 +64,7 @@ func TestRatesService_HealthCheck(t *testing.T) {
 		)
 
 		err := rateService.HealthCheck(context.Background())
+
 		assert.NoError(t, err)
 	})
 
@@ -74,6 +76,7 @@ func TestRatesService_HealthCheck(t *testing.T) {
 		)
 
 		err := rateService.HealthCheck(context.Background())
+
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "API unavailable")
 	})

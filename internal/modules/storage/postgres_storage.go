@@ -32,7 +32,6 @@ func NewPostgresStorage(cfg config.PostgresConfig) (RatesStorage, error) {
 		cfg.DBName,
 	)
 
-	// Применяем миграции
 	if err := db.ApplyMigrations(dsn); err != nil {
 		return nil, fmt.Errorf("migrations failed: %w", err)
 	}
