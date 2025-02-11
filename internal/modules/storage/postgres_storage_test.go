@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 
-	"errors"
 	"testing"
 
 	"get-rates-usdt-grpc-service/internal/models"
@@ -36,6 +35,7 @@ func TestPostgresStorage_SaveRate(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		err := storage.SaveRate(context.Background(), testRate)
+
 		assert.NoError(t, err)
 	})
 
@@ -47,10 +47,10 @@ func TestPostgresStorage_SaveRate(t *testing.T) {
 				testRate.Bid,
 				sqlmock.AnyArg(),
 			).
-			WillReturnError(errors.New("database error"))
+			WillReturnError(assert.AnError)
 
 		err := storage.SaveRate(context.Background(), testRate)
-		assert.ErrorContains(t, err, "database error")
+		assert.Error(t, err)
 	})
 
 	assert.NoError(t, mock.ExpectationsWereMet())

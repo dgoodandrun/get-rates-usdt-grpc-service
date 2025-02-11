@@ -5,7 +5,8 @@ import (
 	"get-rates-usdt-grpc-service/internal/infrastructure/metrics"
 	"get-rates-usdt-grpc-service/internal/modules/service"
 	pb "get-rates-usdt-grpc-service/protogen/golang/get-rates"
-	"log"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type RatesController struct {
@@ -20,7 +21,7 @@ func NewRatesController(s service.RatesService) *RatesController {
 func (c *RatesController) GetRates(ctx context.Context, req *pb.GetRatesRequest) (*pb.GetRatesResponse, error) {
 	rate, err := c.service.GetCurrentRate(ctx)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "Failed to get rates: %v", err)
 	}
 
 	return &pb.GetRatesResponse{
@@ -31,13 +32,18 @@ func (c *RatesController) GetRates(ctx context.Context, req *pb.GetRatesRequest)
 }
 
 func (c *RatesController) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
-	status := pb.HealthCheckResponse_SERVING
+	sts := pb.HealthCheckResponse_SERVING
+
 	if err := c.service.HealthCheck(ctx); err != nil {
-		log.Println(err)
-		status = pb.HealthCheckResponse_NOT_SERVING
+		sts = pb.HealthCheckResponse_NOT_SERVING
+		return &pb.HealthCheckResponse{
+			Status: sts,
+		}, status.Errorf(codes.Unavailable, "Service is unhealthy")
 	}
 
-	metrics.HealthcheckStatus.Set(float64(status))
+	metrics.HealthcheckStatus.Set(float64(sts))
 
-	return &pb.HealthCheckResponse{Status: status}, nil
+	return &pb.HealthCheckResponse{
+		Status: sts,
+	}, nil
 }
